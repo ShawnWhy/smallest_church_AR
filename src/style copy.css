@@ -1,0 +1,135 @@
+*
+{
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body
+{
+    overflow: hidden;
+}
+
+.webgl
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+    outline: none;
+}
+
+.menue{
+    position:absolute;
+    z-index: 2;
+    left:2%;
+    margin-top:2%;
+    border:white 4px solid;
+    border-radius:3px;
+    text-align: center;
+    animation:controllerRoll .3s both
+
+}
+
+.button{
+
+    color:white;
+    font-family: Arial, Helvetica, sans-serif;
+    margin:10px;
+    padding:5px;
+    border-radius:3px
+
+}
+.play, .stop{
+
+    color:white;
+    font-family: Arial, Helvetica, sans-serif;
+    margin:10px;
+    padding:5px;
+    border-radius:3px
+
+}
+.button:hover{
+    background-color: white;
+    color:black
+}
+.play:hover{
+    background-color: white;
+    color:black
+}
+.stop:hover{
+    background-color: white;
+    color:black
+}
+
+.invisibleP{
+    display:none;
+}
+
+.monitor{
+    border:4px solid white;
+    border-radius:3px;
+    color:white;
+    font-weight:bold;
+    position:absolute;
+    
+    width:80%;
+    animation:monitorfall .3s both;
+    z-index: 3;
+    padding:1%;
+    
+    margin:10%;
+    margin-top:2%;
+    
+}
+
+.xButton{
+
+    border-radius:3px;
+    padding:10px;
+    margin:10px;
+    position:Absolute;
+    right:1%;
+    top:1%;
+
+}
+
+.display{
+    margin:10px;
+    padding:20px;
+    width:80%;
+    border-radius:3px
+}
+
+.display:hover{
+    background-color: white;
+    color:black
+}
+.display a:hover{
+   
+    color:black
+}
+
+.xButton:hover{
+    background-color:white;
+    color:black
+
+}
+
+@keyframes monitorfall {
+0%{transform:translateY(-100%)} 
+100%{transform:translateY(0%)}   
+}
+
+@keyframes controllerRoll {
+    0%{transform:translateX(-100%)} 
+    100%{transform:translateX(0%)}   
+    }
+
+body{
+    align-items: center;
+}
+
+a{
+    color:white;
+    text-decoration:none
+}
