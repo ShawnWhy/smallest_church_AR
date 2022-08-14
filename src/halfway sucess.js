@@ -22,6 +22,7 @@ let Eggmixer;
 let shellmixer
 let pearmixer
 let doormixer
+let walkermixer
 let skyMaterialArray2 =[]
 let skyMesh2
 let target = new THREE.Vector3()
@@ -61,6 +62,7 @@ let eggAnimation
 let shellAnimation
 let pearAnimation
 let doorAnimation
+let walkAnimation
 
 let loader;
 
@@ -240,6 +242,23 @@ function initialize()
 	// keyboard = new Keyboard();
 	
 	 loader = new THREE.TextureLoader();
+   gltfLoader.load(
+
+    '/smallest church.glb',
+		(gltf) =>
+		{
+      walker = gltf.scene;
+      console.log(gltf.animations)
+      walkermixer = new THREE.AnimationMixer(walker)
+      walkAnimation = walkermixer.clipAction(gltf.animations[0])
+      scene.add(walker)
+      walkAnimation.play()
+
+
+    }
+
+
+   )
 
 
 	gltfLoader.load(
@@ -255,6 +274,8 @@ function initialize()
     //   building.layers.set(3);
 			console.log(building.children)
 			let children= building.children
+      doormixer = new THREE.AnimationMixer(children[0])
+
 			// children[4].material= defaultMaterial.clone()
 			// children[4].material.opacity= 0.5;
 			
@@ -380,7 +401,7 @@ const deltaTime = elapsedTime - oldElapsedTime
 oldElapsedTime = elapsedTime
 raycaster.setFromCamera(new THREE.Vector3(0,0,-.05).applyMatrix4(controller.matrixWorld), camera)
 
-/
+
 if(building != null){
 eggIntersect = raycaster.intersectObject(building.children[1])
 shellIntersect = raycaster.intersectObject(building.children[3].children[0].children[1])
@@ -448,6 +469,11 @@ pearIntersect = raycaster.intersectObject(building.children[2])
   if(doormixer)
   {
     doormixer.update(deltaTime)
+  }
+
+  if(walkermixer)
+  {
+    walkermixer.update(deltaTime)
   }
 
 

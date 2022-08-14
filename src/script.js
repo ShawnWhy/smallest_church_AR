@@ -3,19 +3,12 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import * as dat from 'lil-gui'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-// import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import { LoopOnce, SphereGeometry, TextureLoader } from 'three'
 import $ from "./Jquery"
-// import gsap from "gsap"
 import { ARButton } from 'three/examples/jsm/webxr/ARButton.js';
 
-// app.js
-// ======
-// var tools = require('./tools');
-// console.log(typeof tools.foo); // => 'function'
-// console.log(typeof tools.bar); // => 'function'
-// console.log(typeof tools.zemba); // => undefined
 
+let walker
 let session
 let portalGroup
 let moveForward = false;
@@ -29,6 +22,7 @@ let Eggmixer;
 let shellmixer
 let pearmixer
 let doormixer
+let walkermixer
 let skyMaterialArray2 =[]
 let skyMesh2
 let target = new THREE.Vector3()
@@ -68,6 +62,7 @@ let eggAnimation
 let shellAnimation
 let pearAnimation
 let doorAnimation
+let walkAnimation
 
 let loader;
 
@@ -152,7 +147,7 @@ function addReticleToScene(){
   scene.add(reticle);
   }
 
-camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 100);
+camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 9999);
 
 // camera.layers.enable(1);
 
@@ -222,19 +217,26 @@ controller.addEventListener('select', ()=>{
 
 //lighting situation 
 
-const ambientLight = new THREE.AmbientLight('green', .2)
-scene.add(ambientLight)
+// const ambientLight = new THREE.AmbientLight('green', .2)
+// scene.add(ambientLight)
 
 const directionalLight = new THREE.DirectionalLight('#ebdbb7', 1)
+const directionalLight2 = new THREE.DirectionalLight('#ebdbb7', .5)
+
 directionalLight.castShadow = true
-directionalLight.shadow.mapSize.set(1024, 1024)
-directionalLight.shadow.camera.far = 15
-directionalLight.shadow.camera.left = - 7
-directionalLight.shadow.camera.top = 7
-directionalLight.shadow.camera.right = 7
-directionalLight.shadow.camera.bottom = - 7
-directionalLight.position.set(- 5, 5, 0)
+directionalLight2.castShadow = true
+
+// directionalLight.shadow.mapSize.set(1024, 1024)
+directionalLight.shadow.camera.top = 2500;
+directionalLight.shadow.camera.bottom = - 2500;
+directionalLight.shadow.camera.left = - 2500;
+directionalLight.shadow.camera.right = 2500;
+directionalLight.shadow.camera.near = 1;
+directionalLight.shadow.camera.far = 1000;
+directionalLight.position.set(- 5, 2, 1)
+directionalLight2.position.set( 5, 2, -1)
 scene.add(directionalLight)
+scene.add(directionalLight2)
   
 function initialize()
 {
@@ -247,6 +249,38 @@ function initialize()
 	// keyboard = new Keyboard();
 	
 	 loader = new THREE.TextureLoader();
+   
+	 gltfLoader.load(
+
+    '/walker.glb',
+		(gltf) =>
+		{
+      walker = gltf.scene;
+			console.log(gltf.animations)
+			console.log(walker)
+			walkermixer = new THREE.AnimationMixer(walker)
+			walkAnimation = walkermixer.clipAction(gltf.animations[0])
+      
+			walker.scale.x*=2;
+			walker.scale.y*=2;
+			walker.scale.z*=2;
+			walker.position.y=-1;
+			walker.position.z=.1;
+			walker.position.x=-.2;
+      walker.children[0].children[1].castShadow= true;
+      walker.children[0].children[1].receiveShadow= true;
+      walker.children[0].children[1].material= new THREE.MeshStandardMaterial({color:"orange"})
+
+
+	  
+	  
+			scene.add(walker)
+			walkAnimation.play()
+
+    }
+
+
+   )
 
 
 	gltfLoader.load(
@@ -258,10 +292,13 @@ function initialize()
 			// building.scale.x*=.1
 			// building.scale.y*=.1
 			// building.scale.z*=.1
+			building.position.y-=.5;
 
     //   building.layers.set(3);
 			console.log(building.children)
 			let children= building.children
+      doormixer = new THREE.AnimationMixer(children[0])
+
 			// children[4].material= defaultMaterial.clone()
 			// children[4].material.opacity= 0.5;
 			
@@ -285,9 +322,9 @@ function initialize()
 
 
 
-			// children[0].children[0].children[1].material = new THREE.MeshBasicMaterial({
-			// 	color:"white"
-			// })
+			children[0].children[0].children[1].material = new THREE.MeshStandardMaterial({
+				color:"white"
+			})
 		
 		
 		scene.add(building)
@@ -324,57 +361,11 @@ function initialize()
         doorAnimation.clampWhenFinished=true
         // doorAnimation.play()
         
-	
-	// textures from http://www.humus.name/
-	// let skyMaterialArray1 = [
-	// 	new THREE.MeshBasicMaterial( { map: loader.load("/px.png"), side: THREE.BackSide } ),
-	// 	new THREE.MeshBasicMaterial( { map: loader.load("/nx.png"), side: THREE.BackSide } ),
-	// 	new THREE.MeshBasicMaterial( { map: loader.load("/py.png"), side: THREE.BackSide } ),
-	// 	new THREE.MeshBasicMaterial( { map: loader.load("/ny.png"), side: THREE.BackSide } ),
-	// 	new THREE.MeshBasicMaterial( { map: loader.load("/pz.png"), side: THREE.BackSide } ),
-	// 	new THREE.MeshBasicMaterial( { map: loader.load("/nz.png"), side: THREE.BackSide } ),
-	// ];
-	// let skyMesh1 = new THREE.Mesh(
-	// 	new THREE.BoxGeometry(50,50,50),
-	// 	skyMaterialArray1 );
-	// // skyMesh1.position.x = -20;
-	// scene.add(skyMesh1);
-	
-	// portalA = new THREE.Mesh(
-	// 	new THREE.SphereGeometry(1, 32),
-	// 	defaultMaterial.clone()
-	// );
-	// portalA.material.opacity = 0.5;
-	// portalGroup = new THREE.Group();
-	// portalA.position.set(0, 0.5, -3);
-	// portalA.scale.y *=2;
-	// portalA.scale.x *=.001
-	// portalA.scale.y *=.001
-	// portalA.scale.z *=.001
-	// portalGroup.add(portalA)
-	// portalGroup.rotation.y += Math.PI*.75;
-	// portalA.rotation.y = Math.PI/4;
-	// portalA.layers.set(4);
-	// scene.add(portalGroup);
-	scene.add(camera)
 
-    // camera.layers.enable(4);
-	// camera.layers.enable(5);
-	
+	scene.add(camera) 
 
-
-
-
-//   skyMaterialArray2 = [
-// 		new THREE.MeshBasicMaterial( { map: loader.load("mountain/posx.jpg"), side: THREE.BackSide } ),
-// 		new THREE.MeshBasicMaterial( { map: loader.load("mountain/negx.jpg"), side: THREE.BackSide } ),
-// 		new THREE.MeshBasicMaterial( { map: loader.load("mountain/posy.jpg"), side: THREE.BackSide } ),
-// 		new THREE.MeshBasicMaterial( { map: loader.load("mountain/negy.jpg"), side: THREE.BackSide } ),
-// 		new THREE.MeshBasicMaterial( { map: loader.load("mountain/posz.jpg"), side: THREE.BackSide } ),
-// 		new THREE.MeshBasicMaterial( { map: loader.load("mountain/negz.jpg"), side: THREE.BackSide } ),
-// 	];
 	skyMesh2 = new THREE.Mesh(
-		new THREE.BoxGeometry(40,40,40),
+		new THREE.BoxGeometry(100,100,100),
 		new THREE.MeshBasicMaterial({color:"white"},{opacity:0}),
 		 );
 	// skyMesh2.position.x = 50;
@@ -433,20 +424,7 @@ const deltaTime = elapsedTime - oldElapsedTime
 oldElapsedTime = elapsedTime
 raycaster.setFromCamera(new THREE.Vector3(0,0,-.05).applyMatrix4(controller.matrixWorld), camera)
 
-// if(portalA !=null){
-		
-  // console.log(portalA.getWorldPosition(target))
-  // console.log(controls.getObject().position)
 
-  // if(controller.position.z<portalA.getWorldPosition(target).z+1 &&
-  // controller.position.z>portalA.getWorldPosition(target).z-1 &&
-  // controller.position.x>portalA.getWorldPosition(target).x-1 &&
-  // controller.position.x<portalA.getWorldPosition(target).x+1){
-
-  //   world = 2
-  //    }
-
-// }
 if(building != null){
 eggIntersect = raycaster.intersectObject(building.children[1])
 shellIntersect = raycaster.intersectObject(building.children[3].children[0].children[1])
@@ -516,138 +494,15 @@ pearIntersect = raycaster.intersectObject(building.children[2])
     doormixer.update(deltaTime)
   }
 
+  if(walkermixer)
+  {
+    walkermixer.update(deltaTime)
+  }
 
-//   camera.layers.enable(2)
-
-	// if(world==1){
-
-	// 	let gl = renderer.getContext();
-		
-		
-	// 	// clear buffers now: color, depth, stencil 
-	// 	// renderer.clear(true,true,true);
-	// 	// // do not clear buffers before each render pass
-	// 	// renderer.autoClear = false;
-		
-		
-	// 	// // FIRST PASS
-	// 	// // goal: using the stencil buffer, place 1's in position of first portal
-
-	// 	// // enable the stencil buffer
-	// 	// gl.enable(gl.STENCIL_TEST);
-		
-	// 	// // layer 1 contains only the first portal
-		
-	// 	// camera.layers.set(4); 
-			
-	// 	// gl.stencilFunc(gl.ALWAYS, 4, 0xff);
-	// 	// gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
-	// 	// gl.stencilMask(0xff);
-
-	// 	// // only write to stencil buffer (not color or depth)
-	// 	// gl.colorMask(false,false,false,false);
-	// 	// gl.depthMask(false);
-		
-	// 	// renderer.render( scene, camera );
-		
-		
-	// 	// // SECOND PASS
-	// 	// // goal: draw from the portal camera perspective (which is aligned relative to the second portal)
-	// 	// //   in the first portal region (set by the stencil in the previous pass)
-		
-	// 	// // set up a clipping plane, so that portal camera does not see anything between
-	// 	// //   the portal camera and the second portal
-		
-	// 	// // default normal of a plane is 0,0,1. apply mesh rotation to it.
-	
-		
-	// 	// // determine which side of the plane camera is on, for clipping plane orientation.
-	// 	// // if(portalA){
-	// 	// // let portalToCamera = new THREE.Vector3().subVectors( mainCamera.position.clone(), portalA.position.clone() ); //  applyQuaternion( mainMover.quaternion );
-	// 	// // let normalPortal = new THREE.Vector3(0,0,1).applyQuaternion( portalA.quaternion );
-	// 	// // let clipSide = -Math.sign( portalToCamera.dot(normalPortal) );
-		
-	// 	// // let clipNormal = new THREE.Vector3(0, 0, clipSide).applyQuaternion( portalB.quaternion );
-	// 	// // let clipPoint = portalB.position;
-	// 	// // let clipPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(clipNormal, clipPoint);
-	// 	// // // renderer.clippingPlanes = [clipPlane];
-	// 	// // }
-	// 	// gl.colorMask(true,true,true,true);
-	// 	// gl.depthMask(true);
-		
-	// 	// gl.stencilFunc(gl.EQUAL, 4, 0xff);
-	// 	// gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
-		
-		
-	// 	// camera.layers.set(5);
-		
-	// 	// renderer.render( scene, camera );
-				
-	// 	// // disable clipping planes
-	// 	// renderer.clippingPlanes = [];
-		
-	// 	// // THIRD PASS
-	// 	// // goal: set the depth buffer data for the first portal,
-	// 	// //   so that it can be occluded by other objects
-		
-	// 	// // finished with stencil
-	// 	// gl.disable(gl.STENCIL_TEST);
-		
-	// 	// gl.colorMask(false,false,false,false);
-	// 	// gl.depthMask(true);
-	// 	// // need to clear the depth buffer, in case of occlusion
-	// 	// renderer.clear(false, true, false);
-	// 	// renderer.render( scene, camera );
-		
-	// 	// // FINAL PASS
-	// 	// // goal: draw the rest of the scene
-
-	// 	// gl.colorMask(true,true,true,true);
-	// 	// gl.depthMask(true);
-		
-		
-	// 	camera.layers.set(4); // layer 0 contains everything but portals
-	// 	renderer.render( scene, camera );
-		
-
-	// }
-
-	// else{
-
-	// 	camera.layers.enable(5);
-		
 
 		renderer.render( scene, camera );
 
-	// }
-
-	
-//   if(frame){
-    
-//     if(!hitTestSourceInitialized){
-//       initializeHitTestSource();
-//     }
-//   }
-  
-//   if(hitTestSourceInitialized){
-//     const hitTestResults = frame.getHitTestResults(hitTestSource);
-//     // console.log(hitTestResults)
-    
-//     if(hitTestResults.length>0){
-//       const hit = hitTestResults[0]
-      
-//       const pose = hit.getPose(localSpace)
-//       reticle.visible = true;
-//       reticle.matrix.fromArray(pose.transform.matrix)
-//     }
-//     else{
-//       reticle.visible=false
-//     }
-//   }
-  
-        // renderer.render(scene, camera);
-
-  
+	  
 }
 
 
